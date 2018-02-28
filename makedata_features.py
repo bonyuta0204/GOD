@@ -22,11 +22,11 @@ from gd_cnn import CnnModel
 ## Global settings #############################################################
 
 # Feture selection settings
-num_features = 1000
+num_features = 4096
 
 # CNN model settings
-model_def = './data/cnn/bvlc_reference_caffenet/bvlc_reference_caffenet.prototxt'
-model_param = './data/cnn/bvlc_reference_caffenet/bvlc_reference_caffenet.caffemodel'
+model_def = './data/cnn/caffe_reference_imagenet/caffe_reference_imagenet.prototxt'
+model_param = './data/cnn/caffe_reference_imagenet/caffe_reference_imagenet.caffemodel'
 cnn_layers = ('conv1', 'conv2', 'conv3', 'conv4', 'conv5', 'fc6', 'fc7', 'fc8')
 
 mean_image_file = './data/images/ilsvrc_2012_mean.npy' # ImageNet Large Scale Visual Recognition Challenge 2012
@@ -36,7 +36,7 @@ exp_stimuli_dir = ('./data/images/image_training', './data/images/image_test')
 catave_image_dir = ('./data/images/category_test', './data/images/category_candidate')
 
 # Results file
-data_dir = './data'
+data_dir = './data_original_alex'
 featuredir = os.path.join(data_dir, 'ImageFeatures_caffe_test/')
 outputfile = os.path.join(data_dir, 'ImageFeatures_caffe_test.pkl')
 
@@ -67,7 +67,7 @@ def get_image_features(net, imagedir, save=False, savefile=None):
     ## Get image features
     print 'Getting features'
     start_time = time()
-    features = net.get_feature(imagefiles, cnn_layers, feature_num=num_features)
+    features = net.get_feature(imagefiles, cnn_layers)
     end_time = time()
 
     print 'Time: %.3f sec' % (end_time - start_time)
