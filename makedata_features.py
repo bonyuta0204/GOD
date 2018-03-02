@@ -106,6 +106,12 @@ def get_category_averaged_features(net, imagedir, save=False, savefile=None):
         
         feat = get_image_features(net, catdir, save=True, savefile=catfile)
 
+        # skip if category is empty
+        if feat.shape[0] == 0:
+            print 'Category: %s is empty' % catdir
+            continue
+
+
         # Calc meanq
         print 'Calculating averaged features'
         layers = feat.columns
