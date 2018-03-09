@@ -4,11 +4,19 @@
 import pandas as pd
 import os
 import pickle
+import argparse
 from makedata_features_alexnet import add_features_df
 
 """
 This script integrate 4 types of features already computed
 """
+
+# set data to work on 
+parser = argparse.ArgumentParser(description="Format feature data")
+parser.add_argument("directory", action="store", help="Directory which contains feature data")
+
+args = parser.parse_args()
+print(args.directory)
 ## Manually load DataFrame and integrate the result
 
 

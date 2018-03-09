@@ -158,6 +158,7 @@ def add_features_df(df, features, featuretype=0):
 
 if __name__ == '__main__':
 
+    # TODO :make change to skip making df if a directory is already processed
     caffe.set_mode_gpu()
 
     if not os.path.exists(featuredir):
@@ -168,7 +169,8 @@ if __name__ == '__main__':
 
     ## Init Pandas dataframe
     df = pd.DataFrame(columns=['ImageID', 'CatID', 'FeatureType', 'conv1', 'conv2', 'conv3', 'conv4', 'conv5', 'fc6', 'fc7', 'fc8'])
-    
+
+    # FIXME :save df in each 4 processes
     ## Image features --------------------------------------------------
     features = get_image_features(model, './data/images/image_training', save=True, savefile=os.path.join(featuredir, 'feature_training.pkl'))
     df = add_features_df(df, features, featuretype=1)
