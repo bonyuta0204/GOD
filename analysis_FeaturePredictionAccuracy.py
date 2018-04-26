@@ -74,6 +74,9 @@ if __name__ == '__main__':
 
         ## Load feature prediction results for each unit
         result_unit_file = os.path.join(result_dir, sbj, roi, feat + '.pkl')
+        if not os.path.exists(result_unit_file):
+            continue
+
         with open(result_unit_file, 'rb') as f:
             results_unit = pickle.load(f)
 

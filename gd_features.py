@@ -34,7 +34,7 @@ class Features(object):
             self.num_units = {feat : self.data_raw.select_feature(feat + ' = 1').shape[1] for feat in self.layers}
         elif dattype == 'caffe':
             self.datatype = dattype
-            self.layers = ['conv1', 'conv2', 'conv3', 'conv4', 'conv5', 'fc6-conv', 'fc7-conv', 'fc8-conv']
+            self.layers = ['conv1', 'conv2', 'conv3', 'conv4', 'conv5', 'fc6', 'fc7', 'fc8']
             with open(datfile, 'rb') as f:
                 self.data_raw = pickle.load(f)
             self.num_units = {feat : self.data_raw[feat][0].shape[0]

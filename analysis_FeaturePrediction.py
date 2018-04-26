@@ -6,12 +6,14 @@ This file is a part of GenericDecoding_demo.
 
 
 import os
+import subprocess
 import pickle
 import sys
 sys.path.append("/home/nakamura/local/bin/python-module")
 import my_mail
 from itertools import product
 from time import time
+import datetime
 
 import numpy as np
 from slir import SparseLinearRegression
@@ -80,7 +82,7 @@ def predict_feature_unit(analysis):
     unit = analysis['unit']
     nitr = analysis['ardreg_num_itr']
 
-    print 'Unit %d' % unit
+    print 'Unit %d %s' % (unit, datetime.datetime.now().strftime("%m/%d/%H:%M"))
 
     ## Get data ----------------------------
 
@@ -151,12 +153,19 @@ def predict_feature_unit(analysis):
             #import pdb; pdb.set_trace()
             model.fit(data_train_norm, feature_train_norm)
         except:
-            model = SparseLinearRegression(n_iter=75, prune_mode=1)
+            n = nitr
 
-            ## Model training
-            # import pdb; pdb.set_trace()
-            model.fit(data_train_norm, feature_train_norm)
-
+            while n >= 0 :
+                print("Error Encounted number of iter is {}".format(n))
+                n -= 10
+                try:
+                    model = SparseLinearRegression(n_iter=n, prune_mode=1)
+                    ## Model training
+                    # import pdb; pdb.set_trace()
+                    model.fit(data_train_norm, feature_train_norm)
+                    break
+                except:
+                    print("number of iteration:{} is failed".format(n))
 
         ## Image feature preiction (percept & imagery)
         predict_percept_norm = model.predict(data_test_percept_norm)
@@ -203,6 +212,15 @@ if __name__ == '__main__':
     sys.stdout.flush()
     print 'Running ' + analysis_name
 
+    # create pid file
+    hostname = subprocess.check_output(["hostname"])
+    pid =str(os.getpid())
+    pid_file = os.path.join("./pid", "{0}_{1}".format(hostname, pid))
+    print(pid_file)
+    with open(pid_file, "w"):
+        print("")
+
+
     ## Load data (brain data & image features) -------------------------
     print 'Loading brain data'
     brain_data = {sbj : bdpy.BData(os.path.join(data_dir, sbj + '.mat'))
@@ -221,11 +239,16 @@ if __name__ == '__main__':
     if not os.path.isdir('./tmp'):
         os.makedirs('./tmp')
 
-    ## Run analysis for each subject, ROI, and feature -----------------
+    if not os.path.isdir('./pid'):
+        os.makedirs('./pid')
+
+        ## Run analysis for each subject, ROI, and feature -----------------
     for sbj, roi, feat in product(subject_list, roi_list, features.layers):
         analysis_id = '%s-%s-%s-%s' % (__file__, sbj, roi, feat)
         result_unit_file = os.path.join(result_dir, sbj, roi, feat + '.pkl')
         lockfile = os.path.join('./tmp', analysis_id + '.lock')
+        with open(pid_file,  "w+") as f:
+            print("")
 
         print 'Analysis %s-%s-%s' % (sbj, roi, feat)
 

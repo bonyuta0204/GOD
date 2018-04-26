@@ -2,7 +2,7 @@
 Common parameters for Generic Decoding
 '''
 
-data_dir = './data_alex'
+data_dir = './data_original_alex'
 
 ## Brain data ----------------------------------------------------------
 
@@ -22,7 +22,7 @@ results_featurepred = 'FeaturePrediction.pkl'
 results_categoryident = 'CategoryIdentification.pkl'
 
 ## Output directory ----------------------------------------------------
-result_dir = './results_alex'
+result_dir = './results_original_alex'
 
 ## Model training parameters -------------------------------------------
 
