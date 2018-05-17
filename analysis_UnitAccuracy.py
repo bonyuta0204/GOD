@@ -8,6 +8,9 @@ import matplotlib.pyplot as plt
 import gd_parameters as gd
 import pickle
 import bdpy
+import sys
+
+from memory_profiler import profile
 
 from gd_features import Features
 from itertools import product
@@ -28,18 +31,7 @@ result_dir = gd.result_dir
 features = Features(os.path.join(data_dir, feature_file), feature_type)
 
 
-# set data dict
-acc_result = {}
-for sbj in subject_list:
-    acc_result[sbj] = {}
-    for roi in roi_list:
-        acc_result[sbj][roi] = {}
-        for feat in features.layers:
-            acc_result[sbj][roi][feat] = {}
-
-# compute accuracy
-for sbj, roi, feat in product(subject_list, roi_list, features.layers):
-    
+def unit_accuracy(acc_result, sbj, roi, feat):
     start_time = time()
 
     analysis_id = '%s-%s-%s' % (sbj, roi, feat)
@@ -52,8 +44,7 @@ for sbj, roi, feat in product(subject_list, roi_list, features.layers):
         acc_result[sbj][roi][feat]["predacc_image_percept"] = None
         acc_result[sbj][roi][feat]["predacc_category_percept"] = None
         acc_result[sbj][roi][feat]["predacc_category_imagery"] = None
-        continue
-
+        return acc_result
     with open(result_unit_file, 'rb') as f:
         
         results_unit = pickle.load(f)
@@ -91,29 +82,49 @@ for sbj, roi, feat in product(subject_list, roi_list, features.layers):
     predacc_category_imagery = corrcoef(pred_imagery, test_feat_cat_imagery, var='col')
     
     acc_result[sbj][roi][feat]["predacc_image_percept"] = predacc_image_percept
-    acc_result[sbj][roi][feat]["predacc_category_percept"] = predacc_category_percept
-    acc_result[sbj][roi][feat]["predacc_category_imagery"] = predacc_category_imagery
+    #acc_result[sbj][roi][feat]["predacc_category_percept"] = predacc_category_percept
+    #acc_result[sbj][roi][feat]["predacc_category_imagery"] = predacc_category_imagery
+    return acc_result
 
 
-df = pd.DataFrame(acc_result)
-with open("temp.pkl", "wb") as f:
-    pickle.dump(df, f)
+def main():
+    if not os.path.exists("temp.pkl"):
+        # set data dict
+        acc_result = {}
+        for sbj in subject_list:
+            acc_result[sbj] = {}
+            for roi in roi_list:
+                acc_result[sbj][roi] = {}
+                for feat in features.layers:
+                    acc_result[sbj][roi][feat] = {}
 
-df_list = []
-for sbj in subject_list:
-    for roi in roi_list:
-        for feat in features.layers:
-            for unit in range(1000):
-                df_list.append({
-                        "subject":sbj,
-                        "ROI":roi,
-                        "feature":feat,
-                        "unit":unit + 1,
-                        "accuracy":acc_result[sbj][roi][feat]["predacc_image_percept"][unit]
-                    })
+        # compute accuracy
+        for sbj, roi, feat in product(subject_list, roi_list, features.layers):
+            acc_result=unit_accuracy(acc_result, sbj, roi, feat)
+            print(sys.getsizeof(acc_result))
 
+        with open("temp.pkl", "wb") as f:
+            pickle.dump(acc_result, f)
+    else:
+        with open("temp.pkl", "rb") as f:
+            acc_result = pickle.load(f)
 
+    df_list = []
+    for sbj in subject_list:
+        for roi in roi_list:
+            for feat in features.layers:
+                if acc_result[sbj][roi][feat]["predacc_image_percept"] is not None:
+                    for unit in range(len(acc_result[sbj][roi][feat]["predacc_image_percept"])):
+                        df_list.append({
+                                "subject":sbj,
+                                "ROI":roi,
+                                "feature":feat,
+                                "unit":unit + 1,
+                                "accuracy":acc_result[sbj][roi][feat]["predacc_image_percept"][unit]
+                            })
 
-
-with open(os.path.join(result_dir, "UnitAccuracy.pkl"), "wb") as f:
-    pickle.dump(df, f)
+    df = pd.DataFrame(df_list)
+    with open(os.path.join(result_dir, "UnitAccuracy.pkl"), "wb") as f:
+        pickle.dump(df, f)
+if __name__  ==  "__main__":
+    main()
